@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class MainMenu {
-    private static final String QUIT_CHOICE = "q";
+    public static final String QUIT_CHOICE = "q";
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
-    public static final Pattern EMAIL_REGEX_PATTERN =
+    private static final Pattern EMAIL_REGEX_PATTERN =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
     public static final Pattern DATE_REGEX_PATTERN =
@@ -245,7 +245,7 @@ public class MainMenu {
             System.out.print("Input your email: ");
             customerEmail = scanner.nextLine();
             if (!EMAIL_REGEX_PATTERN.matcher(customerEmail).matches()) {
-                System.out.println("Invalid email, try again or 'Q' to quit");
+                System.out.print("Invalid email, try again or 'Q' to quit: ");
             }
             if (customerEmail.equalsIgnoreCase(QUIT_CHOICE)) {
                 scanner.nextLine();

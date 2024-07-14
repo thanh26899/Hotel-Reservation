@@ -9,8 +9,11 @@ import java.util.Collection;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class AdminMenu {
+    private static final Pattern ROOM_ID_PATTERN = Pattern.compile("^[0-9]$");
+
     private final AdminResource adminResource = AdminResource.getInstance();
     private final HotelResource hotelResource = HotelResource.getInstance();
     private final Scanner scanner = new Scanner(System.in);
@@ -51,16 +54,24 @@ public class AdminMenu {
     }
 
     private void addARoom() {
-        System.out.print("Enter room ID you want to add: ");
-        IRoom roomSearch;
+        IRoom roomSearch = null;
         String roomId;
+        System.out.print("Enter room ID you want to add: ");
+
         do {
             roomId = scanner.nextLine();
-            roomSearch = hotelResource.getRoom(roomId);
-            if (roomSearch != null) {
-                System.out.print("Room with this ID already existed. Please enter another room ID: ");
+            if (!ROOM_ID_PATTERN.matcher(roomId).matches()) {
+                System.out.print("Invalid room ID, try again to input a number or 'Q' to quit: ");
+            } else if (roomId.equalsIgnoreCase(MainMenu.QUIT_CHOICE)) {
+                scanner.nextLine();
+                roomId = "";
+            } else {
+                roomSearch = hotelResource.getRoom(roomId);
+                if (roomSearch != null) {
+                    System.out.print("Room with this ID already existed. Please enter another room ID: ");
+                }
             }
-        } while (roomSearch != null);
+        } while (!ROOM_ID_PATTERN.matcher(roomId).matches() || roomSearch != null);
 
         System.out.print("Add price for room " + roomId + ": ");
 

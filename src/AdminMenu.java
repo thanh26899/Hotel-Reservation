@@ -61,10 +61,7 @@ public class AdminMenu {
         do {
             roomId = scanner.nextLine();
             if (!ROOM_ID_PATTERN.matcher(roomId).matches()) {
-                System.out.print("Invalid room ID, try again to input a number or 'Q' to quit: ");
-            } else if (roomId.equalsIgnoreCase(MainMenu.QUIT_CHOICE)) {
-                scanner.nextLine();
-                roomId = "";
+                System.out.print("Invalid room ID, try again to input a number: ");
             } else {
                 roomSearch = hotelResource.getRoom(roomId);
                 if (roomSearch != null) {

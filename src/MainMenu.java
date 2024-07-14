@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class MainMenu {
-    public static final String QUIT_CHOICE = "q";
+    private static final String QUIT_CHOICE = "q";
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
     private static final Pattern EMAIL_REGEX_PATTERN =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);

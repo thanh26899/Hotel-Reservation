@@ -12,7 +12,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class AdminMenu {
-    private static final Pattern ROOM_ID_PATTERN = Pattern.compile("^[0-9]$");
+    private static final Pattern ROOM_ID_PATTERN = Pattern.compile("[0-9]+");
 
     private final AdminResource adminResource = AdminResource.getInstance();
     private final HotelResource hotelResource = HotelResource.getInstance();

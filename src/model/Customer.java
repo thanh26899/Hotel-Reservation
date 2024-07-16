@@ -5,7 +5,8 @@ import java.util.regex.Pattern;
 public class Customer {
 
     public static final Pattern EMAIL_REGEX_PATTERN =
-            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\\\.[A-Za-z0-9_-]+)*@" +
+                    "[^-][A-Za-z0-9-]+(\\\\.[A-Za-z0-9-]+)*(\\\\.[A-Za-z]{2,})$", Pattern.CASE_INSENSITIVE);
 
     private String firstName;
     private String lastName;

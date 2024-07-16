@@ -14,8 +14,9 @@ import java.util.regex.Pattern;
 public class MainMenu {
     private static final String QUIT_CHOICE = "q";
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
-    private static final Pattern EMAIL_REGEX_PATTERN =
-            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern EMAIL_REGEX_PATTERN =
+            Pattern.compile("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\\\.[A-Za-z0-9_-]+)*@" +
+                    "[^-][A-Za-z0-9-]+(\\\\.[A-Za-z0-9-]+)*(\\\\.[A-Za-z]{2,})$", Pattern.CASE_INSENSITIVE);
 
     public static final Pattern DATE_REGEX_PATTERN =
             Pattern.compile("^(?:(?:31(\\/|-|\\.)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.)(?:0?[13-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(\\/|-|\\.)0?2\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(\\/|-|\\.)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$", Pattern.CASE_INSENSITIVE);
@@ -223,10 +224,22 @@ public class MainMenu {
     }
 
     private void createAccount() {
-        System.out.print("Input your first name: ");
-        String firstName = scanner.nextLine();
-        System.out.print("Input your last name: ");
-        String lastName = scanner.nextLine();
+        String firstName;
+        String lastName;
+        do {
+            System.out.print("Input your first name: ");
+            firstName = scanner.nextLine();
+            if (firstName.isEmpty()) {
+                System.out.print("First name cannot be blank. ");
+            }
+        } while (firstName.isEmpty());
+        do {
+            System.out.print("Input your last name: ");
+            lastName = scanner.nextLine();
+            if (lastName.isEmpty()) {
+                System.out.print("First name cannot be blank. ");
+            }
+        } while (lastName.isEmpty());
         String email = inputEmail();
         if (email.isEmpty()) {
             return;
@@ -245,7 +258,7 @@ public class MainMenu {
             System.out.print("Input your email: ");
             customerEmail = scanner.nextLine();
             if (!EMAIL_REGEX_PATTERN.matcher(customerEmail).matches()) {
-                System.out.print("Invalid email, try again or 'Q' to quit: ");
+                System.out.print("Invalid email, try again or 'Q' to quit. ");
             }
             if (customerEmail.equalsIgnoreCase(QUIT_CHOICE)) {
                 scanner.nextLine();

@@ -4,9 +4,7 @@ import java.util.regex.Pattern;
 
 public class Customer {
 
-    public static final Pattern EMAIL_REGEX_PATTERN =
-            Pattern.compile("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\\\.[A-Za-z0-9_-]+)*@" +
-                    "[^-][A-Za-z0-9-]+(\\\\.[A-Za-z0-9-]+)*(\\\\.[A-Za-z]{2,})$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern EMAIL_REGEX_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\\.)+[cC][oO][mM]$");
 
     private String firstName;
     private String lastName;
@@ -34,6 +32,7 @@ public class Customer {
     }
 
     public Customer(String email, String firstName, String lastName) {
+
         if (!EMAIL_REGEX_PATTERN.matcher(email).matches()) {
             throw new IllegalArgumentException();
         }

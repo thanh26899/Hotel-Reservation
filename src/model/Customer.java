@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 public class Customer {
 
-    public static final Pattern EMAIL_REGEX_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\\.)+[cC][oO][mM]$");
+    public static final Pattern EMAIL_REGEX_PATTERN = Pattern.compile("^\\w+([-+.']\\w+)*@[A-Za-z\\d]+\\.com$");
 
     private String firstName;
     private String lastName;

@@ -8,6 +8,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -109,16 +110,16 @@ public class MainMenu {
                 availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
 
                 if (availableRooms.isEmpty()) {
-                    System.out.print("There is no available room in your inputted date range. ");
-                    Date recommendCheckInDate = java.sql.Date.valueOf(LocalDateTime.from(checkInDate.toInstant()).plusDays(RECOMMEND_DATE_RANGE).toLocalDate());
-                    Date recommendCheckOutDate = java.sql.Date.valueOf(LocalDateTime.from(checkOutDate.toInstant()).plusDays(RECOMMEND_DATE_RANGE).toLocalDate());
+                    System.out.println("There is no available room in your inputted date range.");
+                    Date recommendCheckInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+                    Date recommendCheckOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
                     availableRooms = hotelResource.findARoom(recommendCheckInDate, recommendCheckOutDate);
                     if (availableRooms.isEmpty()) {
                         System.out.println("Please try another date range instead.");
                         break;
                     }
                     System.out.println("Here are the recommended rooms for you if you reserve from " + DATE_FORMAT.format(recommendCheckInDate)
-                            + " to " + DATE_FORMAT.format(recommendCheckOutDate) + " :" + availableRooms);
+                            + " to " + DATE_FORMAT.format(recommendCheckOutDate) + ": " + availableRooms);
                 } else {
                     System.out.println("List of rooms are available in inputted date range: " + availableRooms);
                 }
@@ -188,7 +189,7 @@ public class MainMenu {
                         }
                     }
                     for (IRoom room : roomList) {
-                        if (availableRoomIds.contains(room.getRoomNumber())) {
+                        if (availableRoomIds.contains(room.getRoomNumber()) && room.getRoomNumber().equalsIgnoreCase(roomIdToBook)) {
                             hotelResource.bookARoom(customerEmail, room, checkInDate, checkOutDate);
                             System.out.println("Room " + roomIdToBook + " reserved successfully!");
                             break;

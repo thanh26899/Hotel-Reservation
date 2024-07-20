@@ -11,6 +11,18 @@ public class Room implements IRoom {
         this.enumeration = enumeration;
     }
 
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public void setEnumeration(RoomType enumeration) {
+        this.enumeration = enumeration;
+    }
+
     @Override
     public String getRoomNumber() {
         return this.roomNumber;

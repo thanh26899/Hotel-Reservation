@@ -88,13 +88,17 @@ public class MainMenu {
             return;
         }
 
+        Date recommendCheckInDate = null;
+        Date recommendCheckOutDate = null;
+
+        Collection<IRoom> allRooms = adminResource.getAllRooms();
+        if (allRooms.isEmpty()) {
+            System.out.println("There is no room available. Ask your admin to add new room.");
+            return;
+        }
+
         switch (choice) {
             case 1:
-                Collection<IRoom> allRooms = adminResource.getAllRooms();
-                if (allRooms.isEmpty()) {
-                    System.out.println("There is no room available. Ask your admin to add new room.");
-                    break;
-                }
                 System.out.print("Input check in date (dd-MM-yyyy): ");
                 inputDate = inputDate();
                 if (inputDate.isEmpty()) {
@@ -111,8 +115,8 @@ public class MainMenu {
 
                 if (availableRooms.isEmpty()) {
                     System.out.println("There is no available room in your inputted date range.");
-                    Date recommendCheckInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
-                    Date recommendCheckOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+                    recommendCheckInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+                    recommendCheckOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
                     availableRooms = hotelResource.findARoom(recommendCheckInDate, recommendCheckOutDate);
                     if (availableRooms.isEmpty()) {
                         System.out.println("Please try another date range instead.");
@@ -126,7 +130,7 @@ public class MainMenu {
                 for (IRoom availableRoom : availableRooms) {
                     availableRoomIds.add(availableRoom.getRoomNumber());
                 }
-                System.out.print("Choose a room ID from above list if you want to reserve or press 'N' to get back to main menu: ");
+                System.out.print("Choose a room ID from above list with date range above if you want to reserve or press 'N' to get back to main menu: ");
                 do {
                     roomIdToBook = scanner.nextLine();
                     if (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
@@ -141,19 +145,17 @@ public class MainMenu {
                 }
             case 2:
                 Collection<IRoom> roomList = adminResource.getAllRooms();
-                if (roomList.isEmpty()) {
-                    System.out.println("There is no room available. Ask your admin to add more room.");
+
+                String customerEmail = inputEmail();
+                if (customerEmail.isEmpty()) {
+                    return;
+                }
+                Customer customer = hotelResource.getCustomer(customerEmail);
+                if (customer == null) {
+                    System.out.println("Customer with this email does not exist. Please create new customer first.");
                     break;
-                } else {
-                    String customerEmail = inputEmail();
-                    if (customerEmail.isEmpty()) {
-                        return;
-                    }
-                    Customer customer = hotelResource.getCustomer(customerEmail);
-                    if (customer == null) {
-                        System.out.println("Customer with this email does not exist. Please create new customer first.");
-                        break;
-                    }
+                }
+                if (roomIdToBook.isEmpty()) {
                     System.out.print("Input check in date (dd-MM-yyyy): ");
                     inputDate = inputDate();
                     if (inputDate.isEmpty()) {
@@ -170,30 +172,28 @@ public class MainMenu {
                     for (IRoom availableRoom : availableRooms) {
                         availableRoomIds.add(availableRoom.getRoomNumber());
                     }
-                    if (roomIdToBook.isEmpty()) {
-                        boolean isBooked = false;
-                        while (!isBooked) {
-                            System.out.print("Input room ID you want to reserve: ");
-                            String roomId = scanner.nextLine();
-                            for (IRoom room : roomList) {
-                                if (availableRoomIds.contains(roomId) && room.getRoomNumber().equalsIgnoreCase(roomId)) {
-                                    hotelResource.bookARoom(customerEmail, room, checkInDate, checkOutDate);
-                                    isBooked = true;
-                                    System.out.println("Room " + roomId + " reserved successfully!");
-                                    break;
-                                }
+                    boolean isBooked = false;
+                    while (!isBooked) {
+                        System.out.print("Input room ID you want to reserve: ");
+                        String roomId = scanner.nextLine();
+                        for (IRoom room : roomList) {
+                            if (availableRoomIds.contains(roomId) && room.getRoomNumber().equalsIgnoreCase(roomId)) {
+                                hotelResource.bookARoom(customerEmail, room, checkInDate, checkOutDate);
+                                isBooked = true;
+                                System.out.println("Room " + roomId + " reserved successfully!");
+                                break;
                             }
-                            if (!isBooked) {
-                                System.out.println("Room ID is not available");
-                            }
+                        }
+                        if (!isBooked) {
+                            System.out.println("Room ID is not available");
                         }
                     }
-                    for (IRoom room : roomList) {
-                        if (availableRoomIds.contains(room.getRoomNumber()) && room.getRoomNumber().equalsIgnoreCase(roomIdToBook)) {
-                            hotelResource.bookARoom(customerEmail, room, checkInDate, checkOutDate);
-                            System.out.println("Room " + roomIdToBook + " reserved successfully!");
-                            break;
-                        }
+                }
+                for (IRoom room : roomList) {
+                    if (availableRoomIds.contains(room.getRoomNumber()) && room.getRoomNumber().equalsIgnoreCase(roomIdToBook)) {
+                        hotelResource.bookARoom(customerEmail, room, recommendCheckInDate, recommendCheckOutDate);
+                        System.out.println("Room " + roomIdToBook + " reserved successfully!");
+                        break;
                     }
                 }
                 break;
@@ -265,7 +265,7 @@ public class MainMenu {
                 System.out.println("");
                 return "";
             }
-        } while (!EMAIL_REGEX_PATTERN.matcher(customerEmail).matches());
+        } while (!EMAIL_REGEX_PATTERN.matcher(customerEmail).matches() || customerEmail.equalsIgnoreCase(QUIT_CHOICE));
         return customerEmail;
     }
 

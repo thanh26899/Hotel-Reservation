@@ -45,10 +45,7 @@ public class AdminMenu {
                 case 5 -> {
                     return;
                 }
-                default -> {
-                    System.out.println("Please just input 1-5!");
-
-                }
+                default -> System.out.println("Please just input 1-5!");
             }
         }
     }

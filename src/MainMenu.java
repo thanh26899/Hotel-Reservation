@@ -7,7 +7,6 @@ import model.Reservation;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -54,10 +53,7 @@ public class MainMenu {
                 case 5 -> {
                     break menuLoop;
                 }
-                default -> {
-                    System.out.println("Please just input 1-5!");
-
-                }
+                default -> System.out.println("Please just input 1-5!");
             }
         }
     }
@@ -71,7 +67,7 @@ public class MainMenu {
 
         String roomIdToBook = "";
         Date checkInDate;
-        Date checkOutDate;
+        Date checkOutDate = null;
         Collection<IRoom> availableRooms;
         String inputDate;
         Set<String> availableRoomIds = new HashSet<>();
@@ -104,11 +100,16 @@ public class MainMenu {
                 }
                 checkInDate = DATE_FORMAT.parse(inputDate);
                 System.out.print("Input check out date (dd-MM-yyyy): ");
-                inputDate = inputDate();
-                if (inputDate.isEmpty()) {
-                    break;
-                }
-                checkOutDate = DATE_FORMAT.parse(inputDate);
+                do {
+                    inputDate = inputDate();
+                    if (inputDate.isEmpty()) {
+                        break;
+                    }
+                    checkOutDate = DATE_FORMAT.parse(inputDate);
+                    if (checkOutDate.before(checkInDate)) {
+                        System.out.print("Check out date have to be after check in date. Try again: ");
+                    }
+                } while (checkOutDate.before(checkInDate));
                 availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
 
                 if (availableRooms.isEmpty()) {
@@ -161,11 +162,17 @@ public class MainMenu {
                     }
                     checkInDate = DATE_FORMAT.parse(inputDate);
                     System.out.print("Input check out date (dd-MM-yyyy): ");
-                    inputDate = inputDate();
-                    if (inputDate.isEmpty()) {
-                        break;
-                    }
-                    checkOutDate = DATE_FORMAT.parse(inputDate);
+                    do {
+                        inputDate = inputDate();
+                        if (inputDate.isEmpty()) {
+                            break;
+                        }
+                        checkOutDate = DATE_FORMAT.parse(inputDate);
+                        if (checkOutDate.before(checkInDate)) {
+                            System.out.print("Check out date have to be after check in date. Try again: ");
+                        }
+                    } while (checkOutDate.before(checkInDate));
+
                     availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
                     for (IRoom availableRoom : availableRooms) {
                         availableRoomIds.add(availableRoom.getRoomNumber());

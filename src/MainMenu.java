@@ -126,7 +126,7 @@ public class MainMenu {
                     System.out.println("Here are the recommended rooms for you if you reserve from " + DATE_FORMAT.format(recommendCheckInDate)
                             + " to " + DATE_FORMAT.format(recommendCheckOutDate) + ": " + availableRooms);
                 } else {
-                    System.out.println("List of rooms are available in inputted date range: " + availableRooms);
+                    System.out.println("List of rooms are available within the inputted date range: " + availableRooms);
                 }
                 if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
                     break;
@@ -134,7 +134,7 @@ public class MainMenu {
                 for (IRoom availableRoom : availableRooms) {
                     availableRoomIds.add(availableRoom.getRoomNumber());
                 }
-                System.out.print("Choose a room ID from above list with date range above if you want to reserve or press 'N' to get back to main menu: ");
+                System.out.print("Choose a room ID from above list within the date range above if you want to reserve or press 'N' to get back to main menu: ");
                 do {
                     roomIdToBook = scanner.nextLine();
                     if (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
@@ -188,6 +188,11 @@ public class MainMenu {
                     for (IRoom availableRoom : availableRooms) {
                         availableRoomIds.add(availableRoom.getRoomNumber());
                     }
+                    if (availableRooms.isEmpty()) {
+                        System.out.println("No room available in this date range.");
+                        break;
+                    }
+                    System.out.println("List of rooms are available within the inputted date range: " + availableRooms);
                     boolean isBooked = false;
                     while (!isBooked) {
                         System.out.print("Input room ID you want to reserve: ");

@@ -7,6 +7,7 @@ import model.Reservation;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -61,12 +62,13 @@ public class MainMenu {
     private void findAndReserveARoom() throws ParseException {
         final String NO_CHOICE = "N";
         final long RECOMMEND_DATE_RANGE = 7;
+        final long ONE_DATE_RANGE = 1;
         System.out.println("1. Find a room");
         System.out.println("2. Reserve a room");
         System.out.print("Please choose what you wanna do or press any key to get back to main menu: ");
 
         String roomIdToBook = "";
-        Date checkInDate;
+        Date checkInDate = null;
         Date checkOutDate = null;
         Collection<IRoom> availableRooms;
         String inputDate;
@@ -126,6 +128,9 @@ public class MainMenu {
                 } else {
                     System.out.println("List of rooms are available in inputted date range: " + availableRooms);
                 }
+                if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
+                    break;
+                }
                 for (IRoom availableRoom : availableRooms) {
                     availableRoomIds.add(availableRoom.getRoomNumber());
                 }
@@ -156,11 +161,17 @@ public class MainMenu {
                 }
                 if (roomIdToBook.isEmpty()) {
                     System.out.print("Input check in date (dd-MM-yyyy): ");
-                    inputDate = inputDate();
-                    if (inputDate.isEmpty()) {
-                        break;
-                    }
-                    checkInDate = DATE_FORMAT.parse(inputDate);
+                    do {
+                        inputDate = inputDate();
+                        if (inputDate.isEmpty()) {
+                            break;
+                        }
+                        checkInDate = DATE_FORMAT.parse(inputDate);
+                        if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
+                            System.out.print("Check in date cannot be past date. Try again: ");
+                        }
+                    } while (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS))));
+
                     System.out.print("Input check out date (dd-MM-yyyy): ");
                     do {
                         inputDate = inputDate();

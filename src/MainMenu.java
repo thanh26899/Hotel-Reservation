@@ -64,8 +64,8 @@ public class MainMenu {
         final long ONE_DATE_RANGE = 1;
 
         String roomIdToBook;
-        Date checkInDate = null;
-        Date checkOutDate = null;
+        Date checkInDate;
+        Date checkOutDate;
         Collection<IRoom> availableRooms;
         String inputDate;
         Set<String> availableRoomIds = new HashSet<>();

@@ -63,29 +63,19 @@ public class MainMenu {
         final String NO_CHOICE = "N";
         final long RECOMMEND_DATE_RANGE = 7;
         final long ONE_DATE_RANGE = 1;
-        System.out.println("1. Find a room");
-        System.out.println("2. Reserve a room");
-        System.out.print("Please choose what you wanna do or press any key to get back to main menu: ");
+//        System.out.println("1. Find a room");
+//        System.out.println("2. Reserve a room");
+//        System.out.print("Please choose what you wanna do or press any key to get back to main menu: ");
 
-        String roomIdToBook = "";
+        String roomIdToBook;
         Date checkInDate = null;
         Date checkOutDate = null;
         Collection<IRoom> availableRooms;
         String inputDate;
         Set<String> availableRoomIds = new HashSet<>();
 
-        int choice;
-        try {
-            choice = scanner.nextInt();
-            scanner.nextLine();
-        } catch (InputMismatchException ime) {
-            System.out.println("Invalid input, pls try again to input a number");
-            scanner.nextLine();
-            return;
-        }
-
-        Date recommendCheckInDate = null;
-        Date recommendCheckOutDate = null;
+        Date recommendCheckInDate;
+        Date recommendCheckOutDate;
 
         Collection<IRoom> allRooms = adminResource.getAllRooms();
         if (allRooms.isEmpty()) {
@@ -93,132 +83,210 @@ public class MainMenu {
             return;
         }
 
-        switch (choice) {
-            case 1:
-                System.out.print("Input check in date (dd-MM-yyyy): ");
-                inputDate = inputDate();
-                if (inputDate.isEmpty()) {
-                    break;
-                }
-                checkInDate = DATE_FORMAT.parse(inputDate);
-                System.out.print("Input check out date (dd-MM-yyyy): ");
-                do {
-                    inputDate = inputDate();
-                    if (inputDate.isEmpty()) {
-                        break;
-                    }
-                    checkOutDate = DATE_FORMAT.parse(inputDate);
-                    if (checkOutDate.before(checkInDate)) {
-                        System.out.print("Check out date have to be after check in date. Try again: ");
-                    }
-                } while (checkOutDate.before(checkInDate));
-                availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
-
-                if (availableRooms.isEmpty()) {
-                    System.out.println("There is no available room in your inputted date range.");
-                    recommendCheckInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
-                    recommendCheckOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
-                    availableRooms = hotelResource.findARoom(recommendCheckInDate, recommendCheckOutDate);
-                    if (availableRooms.isEmpty()) {
-                        System.out.println("Please try another date range instead.");
-                        break;
-                    }
-                    System.out.println("Here are the recommended rooms for you if you reserve from " + DATE_FORMAT.format(recommendCheckInDate)
-                            + " to " + DATE_FORMAT.format(recommendCheckOutDate) + ": " + availableRooms);
-                } else {
-                    System.out.println("List of rooms are available within the inputted date range: " + availableRooms);
-                }
-                if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
-                    break;
-                }
-                for (IRoom availableRoom : availableRooms) {
-                    availableRoomIds.add(availableRoom.getRoomNumber());
-                }
-                System.out.print("Choose a room ID from above list within the date range above if you want to reserve or press 'N' to get back to main menu: ");
-                do {
-                    roomIdToBook = scanner.nextLine();
-                    if (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
-                        System.out.print("Room ID not valid, pls choose from the above available rooms list: ");
-                    }
-                    if (NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
-                        break;
-                    }
-                } while (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook));
-                if (NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
-                    break;
-                }
-            case 2:
-                Collection<IRoom> roomList = adminResource.getAllRooms();
-
-                String customerEmail = inputEmail();
-                if (customerEmail.isEmpty()) {
-                    return;
-                }
-                Customer customer = hotelResource.getCustomer(customerEmail);
-                if (customer == null) {
-                    System.out.println("Customer with this email does not exist. Please create new customer first.");
-                    break;
-                }
-                if (roomIdToBook.isEmpty()) {
-                    System.out.print("Input check in date (dd-MM-yyyy): ");
-                    do {
-                        inputDate = inputDate();
-                        if (inputDate.isEmpty()) {
-                            break;
-                        }
-                        checkInDate = DATE_FORMAT.parse(inputDate);
-                        if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
-                            System.out.print("Check in date cannot be past date. Try again: ");
-                        }
-                    } while (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS))));
-
-                    System.out.print("Input check out date (dd-MM-yyyy): ");
-                    do {
-                        inputDate = inputDate();
-                        if (inputDate.isEmpty()) {
-                            break;
-                        }
-                        checkOutDate = DATE_FORMAT.parse(inputDate);
-                        if (checkOutDate.before(checkInDate)) {
-                            System.out.print("Check out date have to be after check in date. Try again: ");
-                        }
-                    } while (checkOutDate.before(checkInDate));
-
-                    availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
-                    for (IRoom availableRoom : availableRooms) {
-                        availableRoomIds.add(availableRoom.getRoomNumber());
-                    }
-                    if (availableRooms.isEmpty()) {
-                        System.out.println("No room available in this date range.");
-                        break;
-                    }
-                    System.out.println("List of rooms are available within the inputted date range: " + availableRooms);
-                    boolean isBooked = false;
-                    while (!isBooked) {
-                        System.out.print("Input room ID you want to reserve: ");
-                        String roomId = scanner.nextLine();
-                        for (IRoom room : roomList) {
-                            if (availableRoomIds.contains(roomId) && room.getRoomNumber().equalsIgnoreCase(roomId)) {
-                                hotelResource.bookARoom(customerEmail, room, checkInDate, checkOutDate);
-                                isBooked = true;
-                                System.out.println("Room " + roomId + " reserved successfully!");
-                                break;
-                            }
-                        }
-                        if (!isBooked) {
-                            System.out.println("Room ID is not available");
-                        }
-                    }
-                }
-                for (IRoom room : roomList) {
-                    if (availableRoomIds.contains(room.getRoomNumber()) && room.getRoomNumber().equalsIgnoreCase(roomIdToBook)) {
-                        hotelResource.bookARoom(customerEmail, room, recommendCheckInDate, recommendCheckOutDate);
-                        System.out.println("Room " + roomIdToBook + " reserved successfully!");
-                        break;
-                    }
-                }
+        System.out.print("Input check in date (dd-MM-yyyy): ");
+        do {
+            inputDate = inputDate();
+            if (inputDate.isEmpty()) {
                 break;
+            }
+            checkInDate = DATE_FORMAT.parse(inputDate);
+            if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
+                System.out.print("Check in date cannot be past date. Try again: ");
+            }
+        } while (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS))));
+
+        System.out.print("Input check out date (dd-MM-yyyy): ");
+        do {
+            inputDate = inputDate();
+            if (inputDate.isEmpty()) {
+                break;
+            }
+            checkOutDate = DATE_FORMAT.parse(inputDate);
+            if (checkOutDate.before(checkInDate)) {
+                System.out.print("Check out date have to be after check in date. Try again: ");
+            }
+        } while (checkOutDate.before(checkInDate));
+
+        availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
+        for (IRoom availableRoom : availableRooms) {
+            availableRoomIds.add(availableRoom.getRoomNumber());
         }
+        if (availableRooms.isEmpty()) {
+            System.out.print("There is no available room within your inputted date range. ");
+            recommendCheckInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+            recommendCheckOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+            availableRooms = hotelResource.findARoom(recommendCheckInDate, recommendCheckOutDate);
+            if (availableRooms.isEmpty()) {
+                System.out.println("Also no available room within 7 days extended from your inputted date range. Please try another date range instead.");
+                return;
+            }
+            System.out.println("Here are the recommended rooms for you if you reserve from " + DATE_FORMAT.format(recommendCheckInDate)
+                    + " to " + DATE_FORMAT.format(recommendCheckOutDate) + ":");
+
+        }
+        else {
+            System.out.println("List of rooms are available within the inputted date range: ");
+        }
+        System.out.println(availableRooms);
+        for (IRoom availableRoom : availableRooms) {
+            availableRoomIds.add(availableRoom.getRoomNumber());
+        }
+        System.out.print("Input room ID from above list within the date range above if you want to reserve or press 'N' to get back to main menu: ");
+        do {
+            roomIdToBook = scanner.nextLine();
+            if (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
+                System.out.print("Room ID not valid, pls choose from the above available rooms list: ");
+            }
+            if (NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
+                break;
+            }
+        } while (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook));
+        if (NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
+            return;
+        }
+        String customerEmail = inputEmail();
+        if (customerEmail.isEmpty()) {
+            return;
+        }
+        Customer customer = hotelResource.getCustomer(customerEmail);
+        if (customer == null) {
+            System.out.println("Customer with this email does not exist. Please create new customer first.");
+            return;
+        }
+        for (IRoom room : availableRooms) {
+            if (availableRoomIds.contains(roomIdToBook) && room.getRoomNumber().equalsIgnoreCase(roomIdToBook)) {
+                hotelResource.bookARoom(customerEmail, room, checkInDate, checkOutDate);
+                System.out.println("Room " + roomIdToBook + " reserved successfully!");
+                return;
+            }
+        }
+
+//        switch (choice) {
+//            case 1:
+//                System.out.print("Input check in date (dd-MM-yyyy): ");
+//                inputDate = inputDate();
+//                if (inputDate.isEmpty()) {
+//                    break;
+//                }
+//                checkInDate = DATE_FORMAT.parse(inputDate);
+//                System.out.print("Input check out date (dd-MM-yyyy): ");
+//                do {
+//                    inputDate = inputDate();
+//                    if (inputDate.isEmpty()) {
+//                        break;
+//                    }
+//                    checkOutDate = DATE_FORMAT.parse(inputDate);
+//                    if (checkOutDate.before(checkInDate)) {
+//                        System.out.print("Check out date have to be after check in date. Try again: ");
+//                    }
+//                } while (checkOutDate.before(checkInDate));
+//                availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
+//
+//                if (availableRooms.isEmpty()) {
+//                    System.out.println("There is no available room in your inputted date range.");
+//                    recommendCheckInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+//                    recommendCheckOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+//                    availableRooms = hotelResource.findARoom(recommendCheckInDate, recommendCheckOutDate);
+//                    if (availableRooms.isEmpty()) {
+//                        System.out.println("Please try another date range instead.");
+//                        break;
+//                    }
+//                    System.out.println("Here are the recommended rooms for you if you reserve from " + DATE_FORMAT.format(recommendCheckInDate)
+//                            + " to " + DATE_FORMAT.format(recommendCheckOutDate) + ": " + availableRooms);
+//                } else {
+//                    System.out.println("List of rooms are available within the inputted date range: " + availableRooms);
+//                }
+//                if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
+//                    break;
+//                }
+//                for (IRoom availableRoom : availableRooms) {
+//                    availableRoomIds.add(availableRoom.getRoomNumber());
+//                }
+//                System.out.print("Choose a room ID from above list within the date range above if you want to reserve or press 'N' to get back to main menu: ");
+//                do {
+//                    roomIdToBook = scanner.nextLine();
+//                    if (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
+//                        System.out.print("Room ID not valid, pls choose from the above available rooms list: ");
+//                    }
+//                    if (NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
+//                        break;
+//                    }
+//                } while (!availableRoomIds.contains(roomIdToBook) && !NO_CHOICE.equalsIgnoreCase(roomIdToBook));
+//                if (NO_CHOICE.equalsIgnoreCase(roomIdToBook)) {
+//                    break;
+//                }
+//            case 2:
+//                Collection<IRoom> roomList = adminResource.getAllRooms();
+//
+//                String customerEmail = inputEmail();
+//                if (customerEmail.isEmpty()) {
+//                    return;
+//                }
+//                Customer customer = hotelResource.getCustomer(customerEmail);
+//                if (customer == null) {
+//                    System.out.println("Customer with this email does not exist. Please create new customer first.");
+//                    break;
+//                }
+//                if (roomIdToBook.isEmpty()) {
+//                    System.out.print("Input check in date (dd-MM-yyyy): ");
+//                    do {
+//                        inputDate = inputDate();
+//                        if (inputDate.isEmpty()) {
+//                            break;
+//                        }
+//                        checkInDate = DATE_FORMAT.parse(inputDate);
+//                        if (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS)))) {
+//                            System.out.print("Check in date cannot be past date. Try again: ");
+//                        }
+//                    } while (checkInDate.before(Date.from(Instant.now().minus(ONE_DATE_RANGE, ChronoUnit.DAYS))));
+//
+//                    System.out.print("Input check out date (dd-MM-yyyy): ");
+//                    do {
+//                        inputDate = inputDate();
+//                        if (inputDate.isEmpty()) {
+//                            break;
+//                        }
+//                        checkOutDate = DATE_FORMAT.parse(inputDate);
+//                        if (checkOutDate.before(checkInDate)) {
+//                            System.out.print("Check out date have to be after check in date. Try again: ");
+//                        }
+//                    } while (checkOutDate.before(checkInDate));
+//
+//                    availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
+//                    for (IRoom availableRoom : availableRooms) {
+//                        availableRoomIds.add(availableRoom.getRoomNumber());
+//                    }
+//                    if (availableRooms.isEmpty()) {
+//                        System.out.println("No room available in this date range.");
+//                        break;
+//                    }
+//                    System.out.println("List of rooms are available within the inputted date range: " + availableRooms);
+//                    boolean isBooked = false;
+//                    while (!isBooked) {
+//                        System.out.print("Input room ID you want to reserve: ");
+//                        String roomId = scanner.nextLine();
+//                        for (IRoom room : roomList) {
+//                            if (availableRoomIds.contains(roomId) && room.getRoomNumber().equalsIgnoreCase(roomId)) {
+//                                hotelResource.bookARoom(customerEmail, room, checkInDate, checkOutDate);
+//                                isBooked = true;
+//                                System.out.println("Room " + roomId + " reserved successfully!");
+//                                break;
+//                            }
+//                        }
+//                        if (!isBooked) {
+//                            System.out.println("Room ID is not available");
+//                        }
+//                    }
+//                }
+//                for (IRoom room : roomList) {
+//                    if (availableRoomIds.contains(room.getRoomNumber()) && room.getRoomNumber().equalsIgnoreCase(roomIdToBook)) {
+//                        hotelResource.bookARoom(customerEmail, room, recommendCheckInDate, recommendCheckOutDate);
+//                        System.out.println("Room " + roomIdToBook + " reserved successfully!");
+//                        break;
+//                    }
+//                }
+//                break;
+//        }
 
     }
 

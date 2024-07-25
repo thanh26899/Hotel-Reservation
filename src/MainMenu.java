@@ -17,6 +17,7 @@ public class MainMenu {
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
     public static final Pattern EMAIL_REGEX_PATTERN = Pattern.compile("^\\w+([-+.']\\w+)*@[A-Za-z\\d]+\\.com$");
     public static final Pattern DATE_REGEX_PATTERN = Pattern.compile("^(0[1-9]|[1-2][0-9]|3[0-1])-(0[1-9]|1[0-2])-[0-9]{4}$");
+    private static final String UNDERSCORE = "_";
 
     private final HotelResource hotelResource = HotelResource.getInstance();
     private final AdminResource adminResource = AdminResource.getInstance();
@@ -67,6 +68,7 @@ public class MainMenu {
         Date checkInDate;
         Date checkOutDate;
         Collection<IRoom> availableRooms;
+        Map<Collection<IRoom>,String> roomsDateMap;
         String inputDate;
         Set<String> availableRoomIds = new HashSet<>();
 
@@ -100,9 +102,13 @@ public class MainMenu {
                     System.out.print("Check out date have to be after check in date. Try again: ");
                 }
             } while (checkOutDate.before(checkInDate));
-            availableRooms = hotelResource.findARoom(checkInDate, checkOutDate);
-        } while (availableRooms.isEmpty());
+            roomsDateMap = hotelResource.getRoomsDateMap(checkInDate, checkOutDate);
+        } while (roomsDateMap.isEmpty());
 
+        availableRooms = roomsDateMap.keySet().stream().findFirst().get();
+        String[] dateRange = roomsDateMap.get(availableRooms).split(UNDERSCORE);
+        checkInDate = DATE_FORMAT.parse(dateRange[0]);
+        checkOutDate = DATE_FORMAT.parse(dateRange[1]);
         for (IRoom availableRoom : availableRooms) {
             availableRoomIds.add(availableRoom.getRoomNumber());
         }
@@ -198,8 +204,7 @@ public class MainMenu {
                 System.out.print("Invalid email, try again or 'Q' to quit. ");
             }
             if (customerEmail.equalsIgnoreCase(QUIT_CHOICE)) {
-//                scanner.nextLine();
-                System.out.println("");
+                System.out.println();
                 return "";
             }
         } while (!EMAIL_REGEX_PATTERN.matcher(customerEmail).matches() || customerEmail.equalsIgnoreCase(QUIT_CHOICE));

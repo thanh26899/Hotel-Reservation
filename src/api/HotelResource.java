@@ -6,10 +6,7 @@ import model.Reservation;
 import service.CustomerService;
 import service.ReservationService;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 public class HotelResource {
     private static final HotelResource instance = new HotelResource();
@@ -54,5 +51,9 @@ public class HotelResource {
 
     public Collection<IRoom> findARoom(Date checkInDate, Date checkOutDate) {
         return reservationService.findRooms(checkInDate, checkOutDate);
+    }
+
+    public Map<Collection<IRoom>, String> getRoomsDateMap(Date checkInDate, Date checkOutDate) {
+        return reservationService.getRoomsDateMap(checkInDate, checkOutDate);
     }
 }

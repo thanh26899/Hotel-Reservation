@@ -13,6 +13,7 @@ public class ReservationService {
     private static final ReservationService instance = new ReservationService();
     private static final long RECOMMEND_DATE_RANGE = 7;
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
+    private static final String UNDERSCORE = "_";
     public static ReservationService getInstance() {
         return ReservationService.instance;
     }
@@ -47,25 +48,45 @@ public class ReservationService {
     }
 
     public Collection<IRoom> findRooms(Date checkInDate, Date checkOutDate) {
-        Collection<IRoom> availableRooms = this.findRoomsInDateRange(checkInDate, checkOutDate);
+        List<IRoom> reservedRooms = new ArrayList<>();
+        for (Reservation reservation : reservations) {
+            reservedRooms.add(reservation.getRoom());
+        }
+        Set<IRoom> availableRoomList = new HashSet<>();
+        for (IRoom room : rooms) {
+            if (!reservedRooms.contains(room)) {
+                availableRoomList.add(room);
+                continue;
+            }
+            for (Reservation reservation : reservations) {
+                if (reservation.getRoom().equals(room) && !isOverlap(checkInDate, checkOutDate, reservation.getCheckInDate(), reservation.getCheckOutDate())) {
+                    availableRoomList.add(room);
+                }
+            }
+        }
+        return availableRoomList;
+    }
+
+    public Map<Collection<IRoom>, String> getRoomsDateMap(Date checkInDate, Date checkOutDate) {
+        Collection<IRoom> availableRooms = this.findRooms(checkInDate, checkOutDate);
         if (availableRooms.isEmpty()) {
             System.out.print("There is no available room within your inputted date range. ");
-            Date recommendCheckInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
-            Date recommendCheckOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
-            availableRooms = this.findRoomsInDateRange(recommendCheckInDate, recommendCheckOutDate);
+            checkInDate = Date.from(checkInDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+            checkOutDate = Date.from(checkOutDate.toInstant().plus(RECOMMEND_DATE_RANGE, ChronoUnit.DAYS));
+            availableRooms = this.findRooms(checkInDate, checkOutDate);
             if (availableRooms.isEmpty()) {
                 System.out.println("Also no available room within 7 days extended from your inputted date range. Please try another date range instead.");
-                return new ArrayList<>();
+                return new HashMap<>();
             }
-            System.out.println("Here are the recommended rooms for you if you reserve from " + DATE_FORMAT.format(recommendCheckInDate)
-                    + " to " + DATE_FORMAT.format(recommendCheckOutDate) + ":");
-
+            System.out.println("Here are the recommended rooms for you if you reserve from " + DATE_FORMAT.format(checkInDate)
+                    + " to " + DATE_FORMAT.format(checkOutDate) + ":");
         }
         else {
             System.out.println("List of rooms are available within the inputted date range: ");
         }
         System.out.println(availableRooms);
-        return availableRooms;
+        String dateRange = DATE_FORMAT.format(checkInDate) + UNDERSCORE + DATE_FORMAT.format(checkOutDate);
+        return new HashMap<>(Map.of(availableRooms, dateRange));
     }
 
     public Collection<Reservation> getCustomerReservation(Customer customer) {
@@ -94,23 +115,4 @@ public class ReservationService {
         return !(toDate1.before(fromDate2) || fromDate1.after(toDate2));
     }
 
-    private Collection<IRoom> findRoomsInDateRange(Date checkInDate, Date checkOutDate) {
-        List<IRoom> reservedRooms = new ArrayList<>();
-        for (Reservation reservation : reservations) {
-            reservedRooms.add(reservation.getRoom());
-        }
-        Set<IRoom> availableRoomList = new HashSet<>();
-        for (IRoom room : rooms) {
-            if (!reservedRooms.contains(room)) {
-                availableRoomList.add(room);
-                continue;
-            }
-            for (Reservation reservation : reservations) {
-                if (reservation.getRoom().equals(room) && !isOverlap(checkInDate, checkOutDate, reservation.getCheckInDate(), reservation.getCheckOutDate())) {
-                    availableRoomList.add(room);
-                }
-            }
-        }
-        return availableRoomList;
-    }
 }
